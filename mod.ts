@@ -1,13 +1,18 @@
 const GREAT_DAY = 1582133511000;
 let counter = 0;
-const masters = ["chs", "ded", "hrt", "wht", "rlm", "hvn", "vod"];
 function getCurrentTime() {
   return Math.floor(Date.now() - GREAT_DAY);
 }
+interface generatedItem {
+  ts: number;
+  generated: string;
+}
+
 const lastgen = {
   ts: 0,
-  gen: [],
+  gen: new Array(),
 };
+
 function formatCount() {
   let response = counter.toString();
   if (response.length === 0) response = "000";
@@ -18,21 +23,23 @@ function formatCount() {
   return response;
 }
 
-function generate(master) {
+function generate(): generatedItem {
+  /*
   if (!master) master = masters[Math.floor(Math.random() * masters.length)];
   if (!masters.includes(master))
     master = masters[Math.floor(Math.random() * masters.length)];
+    */
   const ts = getCurrentTime();
-  return { ts, generated: `${ts}${master.toUpperCase()}${formatCount()}` };
+  return { ts, generated: `${ts}${formatCount()}` };
 }
 
-function findDupes(arr) {
-    return arr.filter((item, index) => arr.indexOf(item) != index);
-  }
+function findDupes(arr: Array<any>) {
+  return arr.filter((item, index) => arr.indexOf(item) != index);
+}
 
-module.exports = function (master) {
+export function createID() {
   if (counter === 999) counter = 0;
-  let { generated, ts } = generate(master);
+  let { generated, ts } = generate();
 
   if (lastgen.ts !== ts) {
     lastgen.ts = ts;
@@ -41,25 +48,25 @@ module.exports = function (master) {
     return generated;
   } else {
     while (lastgen.gen.includes(generated)) {
-      generated = generate(master).generated;
-      console.log(generated);
+      generated = generate().generated;
     }
     lastgen.gen.push(generated);
     counter++;
     return generated;
   }
-};
+}
 
-// let x = Math.floor(Math.random() * 999);
 /*
+// let x = Math.floor(Math.random() * 999);
+
 console.time("15k iterations");
 let x = [];
 for (let i = 0; i < 15000; ++i) {
-  console.log(i);
-  x.push(module.exports());
+  x.push(run());
+  console.log(x[i])
 }
 
-
-console.log(findDupes(x));
+//console.log(x);
+console.log(findDupes(x).length + " dupe values")
 console.timeEnd("15k iterations");
 */
