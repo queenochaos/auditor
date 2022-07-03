@@ -1,3 +1,5 @@
+import { AddZero } from "https://deno.land/x/numwizard@v1.2.1/src/add_zero.ts";
+
 const GREAT_DAY = 1582133511000;
 const counter = new Uint8Array(1);
 counter[0] = 0;
@@ -14,14 +16,12 @@ const lastgen: { ts: number; gen: number[] } = {
   gen: [],
 };
 
-function formatCount() {
-  let response = Atomics.load(counter, 0).toString();
-  if (response.length === 0) response = "000";
-  else if (response.length === 1) response = `00${response}`;
-  else if (response.length === 2) response = `0${response}`;
-  else if (response.length === 3) response = `${response}`;
-  else if (response.length > 3) response = `${response.substring(0, 2)}`;
-  return response;
+/**
+ * Add Zeros to the counter.
+ * @returns {string} Formatted count.
+ */
+function formatCount(): string {
+  return AddZero(Atomics.load(counter, 0), 3);
 }
 
 function generate(): generatedItem {
@@ -34,7 +34,7 @@ function generate(): generatedItem {
   return { ts, generated: Number(`${ts}${formatCount()}`) };
 }
 
-export function create() {
+export function create(): number {
   if (Atomics.load(counter, 0) === 999) Atomics.store(counter, 0, 0);
   let { generated, ts } = generate();
 
@@ -54,6 +54,5 @@ export function create() {
 }
 
 export function createdAt(id: number): Date {
-  return new Date (Math.floor(id / 1000) + 1582133511000)
-
+  return new Date(Math.floor(id / 1000) + 1582133511000);
 }
