@@ -29,3 +29,5 @@ const dupes = findDupes<number>(x)
   console.log(`Last value at ${createdAt(x[x.length - 1])}`)
   return dupes;
 }
+
+console.log(create(), createdAt(create()))
