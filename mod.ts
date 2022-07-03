@@ -1,20 +1,21 @@
 const GREAT_DAY = 1582133511000;
-let counter = 0;
+const counter = new Uint8Array(1);
+counter[0] = 0;
 function getCurrentTime() {
   return Math.floor(Date.now() - GREAT_DAY);
 }
 interface generatedItem {
   ts: number;
-  generated: string;
+  generated: number;
 }
 
-const lastgen = {
+const lastgen: { ts: number; gen: number[] } = {
   ts: 0,
-  gen: new Array(),
+  gen: [],
 };
 
 function formatCount() {
-  let response = counter.toString();
+  let response = Atomics.load(counter, 0).toString();
   if (response.length === 0) response = "000";
   else if (response.length === 1) response = `00${response}`;
   else if (response.length === 2) response = `0${response}`;
@@ -30,43 +31,29 @@ function generate(): generatedItem {
     master = masters[Math.floor(Math.random() * masters.length)];
     */
   const ts = getCurrentTime();
-  return { ts, generated: `${ts}${formatCount()}` };
+  return { ts, generated: Number(`${ts}${formatCount()}`) };
 }
 
-function findDupes(arr: Array<any>) {
-  return arr.filter((item, index) => arr.indexOf(item) != index);
-}
-
-export function createID() {
-  if (counter === 999) counter = 0;
+export function create() {
+  if (Atomics.load(counter, 0) === 999) Atomics.store(counter, 0, 0);
   let { generated, ts } = generate();
 
   if (lastgen.ts !== ts) {
     lastgen.ts = ts;
     lastgen.gen.push(generated);
-    counter++;
+    Atomics.add(counter, 0, 1);
     return generated;
   } else {
     while (lastgen.gen.includes(generated)) {
       generated = generate().generated;
     }
     lastgen.gen.push(generated);
-    counter++;
+    Atomics.add(counter, 0, 1);
     return generated;
   }
 }
 
-/*
-// let x = Math.floor(Math.random() * 999);
+export function createdAt(id: number): Date {
+  return new Date (Math.floor(id / 1000) + 1582133511000)
 
-console.time("15k iterations");
-let x = [];
-for (let i = 0; i < 15000; ++i) {
-  x.push(run());
-  console.log(x[i])
 }
-
-//console.log(x);
-console.log(findDupes(x).length + " dupe values")
-console.timeEnd("15k iterations");
-*/
